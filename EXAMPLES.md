@@ -1,214 +1,372 @@
-# Testing Examples
+# Usage Examples
 
-## Quick Start
+## Basic Validation
 
-1. **Start the API server:**
+### Disposable Email Detection
+
 ```bash
-./run.sh
-# Or manually:
-# source venv/bin/activate
-# uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-2. **Open a new terminal and run tests:**
-
-## Basic curl Examples
-
-### Health Check
-```bash
-curl http://localhost:8000/
-```
-
-### Check API Status
-```bash
-curl http://localhost:8000/status | jq
-```
-
-### Validate Single Email & IP
-```bash
-# Disposable email example
-curl -X POST http://localhost:8000/validate \
+curl -X POST https://your-api-url.onrender.com/validate \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@mailinator.com",
     "ip": "8.8.8.8"
-  }' | jq
-
-# Clean email example
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@gmail.com",
-    "ip": "1.1.1.1"
-  }' | jq
-
-# IPv6 example
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@guerrillamail.com",
-    "ip": "2001:4860:4860::8888"
-  }' | jq
+  }'
 ```
 
-### Invalid Input Examples
-```bash
-# Invalid email format
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "not-an-email",
-    "ip": "8.8.8.8"
-  }' | jq
-
-# Invalid IP address
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "ip": "999.999.999.999"
-  }' | jq
-```
-
-### Bulk Validation (CSV)
-```bash
-# Create test CSV file
-cat > test.csv << 'EOF'
-email,ip
-test@mailinator.com,192.0.2.1
-user@gmail.com,8.8.8.8
-admin@guerrillamail.com,1.2.3.4
-contact@10minutemail.com,93.184.216.34
-EOF
-
-# Upload and validate
-curl -X POST http://localhost:8000/bulk-validate \
-  -F "file=@test.csv" \
-  -o results.csv
-
-# View results
-cat results.csv
-```
-
-### Bulk Validation (JSON)
-```bash
-# Create test JSON file
-cat > test.json << 'EOF'
-[
-  {"email": "test@mailinator.com", "ip": "192.0.2.1"},
-  {"email": "user@gmail.com", "ip": "8.8.8.8"},
-  {"email": "admin@guerrillamail.com", "ip": "1.2.3.4"}
-]
-EOF
-
-# Upload and validate
-curl -X POST http://localhost:8000/bulk-validate \
-  -F "file=@test.json" \
-  -o results.csv
-
-# View results
-cat results.csv
-```
-
-### Manual List Sync
-```bash
-curl -X POST http://localhost:8000/sync | jq
-```
-
-## Python Test Script
-
-Run the comprehensive test suite:
-```bash
-# In a new terminal (while server is running)
-python3 test_api.py
-```
-
-## Performance Testing
-
-Test response time:
-```bash
-time curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "ip": "8.8.8.8"
-  }' -s -o /dev/null
-```
-
-Run multiple requests:
-```bash
-for i in {1..10}; do
-  time curl -X POST http://localhost:8000/validate \
-    -H "Content-Type: application/json" \
-    -d '{"email": "test@example.com", "ip": "8.8.8.8"}' \
-    -s -o /dev/null
-done
-```
-
-## Common Disposable Email Domains to Test
-
-- mailinator.com
-- guerrillamail.com
-- 10minutemail.com
-- tempmail.com
-- throwaway.email
-- maildrop.cc
-- trashmail.com
-- yopmail.com
-
-## Interactive API Documentation
-
-Visit these URLs while the server is running:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-- OpenAPI JSON: http://localhost:8000/openapi.json
-
-## Example Response
-
+**Response:**
 ```json
 {
   "email_disposable": true,
   "email_reason": "Domain 'mailinator.com' is in disposable email list",
+  "email_role_based": false,
+  "email_typo_suggestion": null,
   "ip_blacklisted": false,
   "ip_blacklist_hits": 0,
   "ip_blacklist_sources": [],
-  "blacklist_last_updated": {
-    "ipsum": "2024-01-15T10:30:05Z",
-    "bruteforceblocker": "2024-01-15T10:30:12Z"
+  "risk_score": 70
+}
+```
+
+### Clean Email
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@gmail.com",
+    "ip": "1.1.1.1"
+  }'
+```
+
+**Response:**
+```json
+{
+  "email_disposable": false,
+  "email_reason": "Domain 'gmail.com' is not in disposable email list",
+  "email_role_based": false,
+  "email_typo_suggestion": null,
+  "ip_blacklisted": false,
+  "ip_blacklist_hits": 0,
+  "ip_blacklist_sources": [],
+  "risk_score": 0
+}
+```
+
+---
+
+## Advanced Features
+
+### Role-Based Email Detection
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "ip": "8.8.8.8"
+  }'
+```
+
+**Response:**
+```json
+{
+  "email_disposable": false,
+  "email_reason": "Domain 'example.com' is not in disposable email list",
+  "email_role_based": true,
+  "email_typo_suggestion": null,
+  "ip_blacklisted": false,
+  "ip_blacklist_hits": 0,
+  "ip_blacklist_sources": [],
+  "risk_score": 20
+}
+```
+
+### Typo Detection
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@gmal.com",
+    "ip": "8.8.8.8"
+  }'
+```
+
+**Response:**
+```json
+{
+  "email_disposable": true,
+  "email_reason": "Domain 'gmal.com' is in disposable email list",
+  "email_role_based": false,
+  "email_typo_suggestion": "user@gmail.com",
+  "ip_blacklisted": false,
+  "ip_blacklist_hits": 0,
+  "ip_blacklist_sources": [],
+  "risk_score": 80
+}
+```
+
+### IPv6 Support
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "ip": "2001:4860:4860::8888"
+  }'
+```
+
+---
+
+## Bulk Validation
+
+### CSV Upload
+
+Create `emails.csv`:
+```csv
+email,ip
+test@mailinator.com,192.0.2.1
+user@gmail.com,8.8.8.8
+admin@example.com,1.2.3.4
+```
+
+Upload:
+```bash
+curl -X POST https://your-api-url.onrender.com/bulk-validate \
+  -F "file=@emails.csv" \
+  -o results.csv
+```
+
+### JSON Upload
+
+Create `emails.json`:
+```json
+[
+  {"email": "test@mailinator.com", "ip": "192.0.2.1"},
+  {"email": "user@gmail.com", "ip": "8.8.8.8"},
+  {"email": "admin@example.com", "ip": "1.2.3.4"}
+]
+```
+
+Upload:
+```bash
+curl -X POST https://your-api-url.onrender.com/bulk-validate \
+  -F "file=@emails.json" \
+  -o results.csv
+```
+
+---
+
+## API Information
+
+### Check Status
+
+```bash
+curl https://your-api-url.onrender.com/status
+```
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "email_domains_count": 4727,
+  "email_last_updated": "2025-09-29T20:57:09Z",
+  "ip_blacklists": {
+    "ipsum": 188454,
+    "bruteforceblocker": 265
+  },
+  "ip_last_updated": {
+    "ipsum": "2025-09-29T20:57:15Z",
+    "bruteforceblocker": "2025-09-29T20:57:16Z"
   }
 }
 ```
 
-## Troubleshooting
+### View Metrics
 
-### Server won't start
 ```bash
-# Check if port 8000 is already in use
-lsof -i :8000
-
-# Kill the process if needed
-kill -9 <PID>
-
-# Or use a different port
-uvicorn main:app --reload --port 8001
+curl https://your-api-url.onrender.com/metrics
 ```
 
-### Lists not downloading
-```bash
-# Check if server can reach GitHub
-curl -I https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf
-
-# Manually trigger sync
-curl -X POST http://localhost:8000/sync
+**Response:**
+```json
+{
+  "uptime_seconds": 3600,
+  "total_requests": 1250,
+  "error_count": 0,
+  "error_rate": 0.0,
+  "requests_per_second": 0.347,
+  "latency_ms": {
+    "p50": 0.07,
+    "p95": 0.10,
+    "p99": 0.15
+  }
+}
 ```
 
-### Slow responses
-```bash
-# Check list sizes
-curl http://localhost:8000/status | jq '.email_domains_count, .ip_blacklists'
+### Manual Sync
 
-# Monitor response times
-curl -w "\nTime: %{time_total}s\n" -X POST http://localhost:8000/validate \
+```bash
+curl -X POST https://your-api-url.onrender.com/sync
+```
+
+---
+
+## Error Handling
+
+### Invalid Email
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
   -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "ip": "8.8.8.8"}'
+  -d '{
+    "email": "invalid-email",
+    "ip": "8.8.8.8"
+  }'
+```
+
+**Response (422):**
+```json
+{
+  "detail": [{
+    "type": "value_error",
+    "loc": ["body", "email"],
+    "msg": "Value error, Invalid email format"
+  }]
+}
+```
+
+### Invalid IP
+
+```bash
+curl -X POST https://your-api-url.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "ip": "999.999.999.999"
+  }'
+```
+
+**Response (422):**
+```json
+{
+  "detail": [{
+    "type": "value_error",
+    "loc": ["body", "ip"],
+    "msg": "Value error, Invalid IP address format"
+  }]
+}
+```
+
+---
+
+## Python Example
+
+```python
+import requests
+
+API_URL = "https://your-api-url.onrender.com"
+
+def validate_email_ip(email, ip):
+    response = requests.post(
+        f"{API_URL}/validate",
+        json={"email": email, "ip": ip}
+    )
+    return response.json()
+
+# Test
+result = validate_email_ip("test@mailinator.com", "8.8.8.8")
+print(f"Disposable: {result['email_disposable']}")
+print(f"Risk Score: {result['risk_score']}/100")
+```
+
+## JavaScript Example
+
+```javascript
+const API_URL = "https://your-api-url.onrender.com";
+
+async function validateEmailIP(email, ip) {
+  const response = await fetch(`${API_URL}/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, ip })
+  });
+  return await response.json();
+}
+
+// Test
+validateEmailIP("test@mailinator.com", "8.8.8.8")
+  .then(result => {
+    console.log(`Disposable: ${result.email_disposable}`);
+    console.log(`Risk Score: ${result.risk_score}/100`);
+  });
+```
+
+---
+
+## Common Use Cases
+
+### User Registration
+```python
+def validate_signup(email, ip):
+    result = validate_email_ip(email, ip)
+    
+    if result['risk_score'] > 50:
+        return {
+            'allowed': False,
+            'reason': 'High risk email or IP detected'
+        }
+    
+    return {'allowed': True}
+```
+
+### Email List Cleaning
+```bash
+# Bulk validate entire list
+curl -X POST https://your-api-url.onrender.com/bulk-validate \
+  -F "file=@email_list.csv" \
+  -o cleaned_results.csv
+
+# Filter out disposables
+awk -F',' '$3=="False"' cleaned_results.csv > clean_emails.csv
+```
+
+### Fraud Detection
+```python
+def check_fraud_risk(email, ip):
+    result = validate_email_ip(email, ip)
+    
+    risk_level = 'low'
+    if result['risk_score'] > 80:
+        risk_level = 'critical'
+    elif result['risk_score'] > 50:
+        risk_level = 'high'
+    elif result['risk_score'] > 20:
+        risk_level = 'medium'
+    
+    return {
+        'risk_level': risk_level,
+        'disposable_email': result['email_disposable'],
+        'blacklisted_ip': result['ip_blacklisted'],
+        'factors': []
+    }
+```
+
+---
+
+## Rate Limits
+
+- `/validate`: 60 requests/minute per IP
+- `/bulk-validate`: 10 requests/minute per IP
+
+Exceeded limits return HTTP 429 with `Retry-After` header.
+
+---
+
+## Interactive Documentation
+
+Visit `/docs` for interactive API documentation:
+```
+https://your-api-url.onrender.com/docs
 ```

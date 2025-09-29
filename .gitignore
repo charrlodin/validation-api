@@ -12,6 +12,8 @@ ENV/
 
 # Logs
 *.log
+server.log
+server.pid
 
 # Data
 data/
@@ -19,25 +21,23 @@ data/
 # System
 .DS_Store
 
-# CSV results
+# Test files
+comprehensive_test.py
+test_api.py
+test.csv
+test.json
 *_results.csv
 production_results.csv
 test_results.csv
 
-# Internal documentation (not for public)
+# Internal documentation
 docs/
-DEPLOY_NOW.md
-DEPLOY_CHECKLIST.md
-YOUR_DEPLOYMENT.md
-FINAL_SUMMARY.md
-AUTO_SYNC_EXPLAINED.md
-BUSINESS_MODEL_EXPLAINED.md
-PRODUCTION_TEST_RESULTS.md
-TEST_RESULTS.md
-TESTING_GUIDE.md
-QUICK_START_TESTING.md
-SUMMARY.md
 
-# Server files
-server.log
-server.pid
+# Deployment scripts
+run.sh
+
+# Build files
+*.pyc
+build/
+dist/
+*.egg-info/
