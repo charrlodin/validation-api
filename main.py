@@ -150,6 +150,19 @@ async def root():
     }
 
 
+@app.get("/ping")
+async def ping():
+    """
+    Simple ping endpoint for health monitoring.
+    Returns 200 OK with timestamp if service is healthy.
+    """
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat() + 'Z',
+        "service": "Email & IP Validation API"
+    }
+
+
 @app.get("/status")
 async def status():
     """Get API status and list update information."""
