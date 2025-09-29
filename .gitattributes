@@ -1,0 +1,7 @@
+* text=auto
+*.py text
+*.md text
+*.txt text
+*.json text
+*.csv text
+*.sh text eol=lf
