@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -8,8 +9,35 @@ env/
 ENV/
 .venv
 .env
+
+# Logs
 *.log
+
+# Data
 data/
+
+# System
 .DS_Store
-*.csv
-*.json
+
+# CSV results
+*_results.csv
+production_results.csv
+test_results.csv
+
+# Internal documentation (not for public)
+docs/
+DEPLOY_NOW.md
+DEPLOY_CHECKLIST.md
+YOUR_DEPLOYMENT.md
+FINAL_SUMMARY.md
+AUTO_SYNC_EXPLAINED.md
+BUSINESS_MODEL_EXPLAINED.md
+PRODUCTION_TEST_RESULTS.md
+TEST_RESULTS.md
+TESTING_GUIDE.md
+QUICK_START_TESTING.md
+SUMMARY.md
+
+# Server files
+server.log
+server.pid

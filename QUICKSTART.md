@@ -1,97 +1,73 @@
 # Quick Start Guide
 
-## 1. Start the Server
+## Try the Live API
+
+**Production URL:** https://validation-api-zgxh.onrender.com
+
+### 1. Health Check
 
 ```bash
+curl https://validation-api-zgxh.onrender.com/
+```
+
+### 2. Validate an Email
+
+```bash
+curl -X POST https://validation-api-zgxh.onrender.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@mailinator.com","ip":"8.8.8.8"}'
+```
+
+### 3. Check API Status
+
+```bash
+curl https://validation-api-zgxh.onrender.com/status
+```
+
+### 4. View Interactive Docs
+
+Visit: https://validation-api-zgxh.onrender.com/docs
+
+## Response Format
+
+```json
+{
+  "email_disposable": true,
+  "email_reason": "Domain 'mailinator.com' is in disposable email list",
+  "email_role_based": false,
+  "email_typo_suggestion": null,
+  "ip_blacklisted": false,
+  "ip_blacklist_hits": 0,
+  "ip_blacklist_sources": [],
+  "risk_score": 70
+}
+```
+
+## Risk Scoring
+
+- **0-20**: Low risk (clean)
+- **21-50**: Medium risk (role-based)
+- **51-80**: High risk (disposable or blacklisted)
+- **81-100**: Critical risk (multiple factors)
+
+## Self-Hosting
+
+```bash
+git clone https://github.com/charrlodin/validation-api.git
 cd validation-api
-./run.sh
-```
-
-Wait for the message: "Application startup complete."
-
-## 2. Test in Another Terminal
-
-### Health Check
-```bash
-curl http://localhost:8000/
-```
-
-### Check Status & Statistics
-```bash
-curl http://localhost:8000/status | python3 -m json.tool
-```
-
-### Validate Disposable Email
-```bash
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@mailinator.com", "ip": "8.8.8.8"}' \
-  | python3 -m json.tool
-```
-
-Expected: `email_disposable: true`
-
-### Validate Clean Email
-```bash
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@gmail.com", "ip": "1.1.1.1"}' \
-  | python3 -m json.tool
-```
-
-Expected: `email_disposable: false`
-
-### Bulk Validate CSV
-```bash
-curl -X POST http://localhost:8000/bulk-validate \
-  -F "file=@test.csv" \
-  -o results.csv
-
-cat results.csv
-```
-
-## 3. View Interactive Documentation
-
-Open in your browser:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-## Common Disposable Email Domains
-
-Test with these:
-- mailinator.com ✓
-- guerrillamail.com ✓
-- 10minutemail.com ✓
-- tempmail.com
-- throwaway.email
-- maildrop.cc
-
-## Performance
-
-Expected response times:
-- `/validate`: <100ms
-- Email check: <0.01ms
-- IP check: <0.02ms
-
-## Troubleshooting
-
-**Port already in use?**
-```bash
-lsof -i :8000
-kill -9 <PID>
-```
-
-**Dependencies issue?**
-```bash
-rm -rf venv
-python3 -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-## Next Steps
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for details.
 
-- Read `README.md` for complete documentation
-- See `EXAMPLES.md` for more testing examples
-- Check `SUMMARY.md` for project overview
-- Run `python3 test_api.py` for comprehensive tests
+## Rate Limits
+
+- `/validate`: 60 requests/minute
+- `/bulk-validate`: 10 requests/minute
+
+## Need Help?
+
+- 📚 [Full Documentation](README.md)
+- 🔧 [API Reference](https://validation-api-zgxh.onrender.com/docs)
+- 💬 [GitHub Issues](https://github.com/charrlodin/validation-api/issues)
